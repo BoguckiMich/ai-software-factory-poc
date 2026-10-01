@@ -1,0 +1,5 @@
+# Przypięte wersje, z którymi projekt był testowany.
+# Zakresy wersji są w pyproject.toml; instalacja pakietu: pip install -e .
+anthropic==1.11.0
+pyzeebe==4.7.0
+python-dotenv==1.2.4

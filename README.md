@@ -25,3 +25,58 @@ Proces symuluje w pełni zautomatyzowaną linię produkcyjną oprogramowania z w
 * Docker & Docker Compose
 * Python 3.11+
 * Klucz API Anthropic (Claude)
+
+### Instalacja
+
+```powershell
+python -m venv venv
+.\venv\Scripts\Activate.ps1
+pip install -r requirements.txt   # przypięte, przetestowane wersje
+pip install -e .                  # instaluje pakiet ai_factory i komendę ai-factory
+```
+
+### Konfiguracja
+
+Skopiuj `.env.example` do `.env` i uzupełnij `ANTHROPIC_API_KEY`. Worker wczytuje `.env` automatycznie; zmienne ustawione w powłoce mają pierwszeństwo.
+
+| Zmienna | Wymagana | Domyślnie | Opis |
+|---|---|---|---|
+| `ANTHROPIC_API_KEY` | tak | - | Klucz Anthropic API |
+| `CLAUDE_MODEL` | nie | `claude-haiku-4-5-20251001` | Model używany przez wszystkie boty |
+| `ZEEBE_ADDRESS` | nie | `localhost:26500` | Adres gateway Zeebe (gRPC) |
+| `OUTPUT_DIR` | nie | `output` | Katalog na zatwierdzony kod (względem katalogu uruchomienia) |
+
+### Uruchomienie
+
+1. Uruchom lokalnie Camundę 8 (gateway Zeebe dostępny pod `ZEEBE_ADDRESS`).
+2. Wdróż `bpmn/ai_factory.bpmn` oraz formularz `bpmn/ai_start_form.form` (np. z Camunda Modeler).
+3. Z katalogu głównego projektu uruchom worker:
+
+```powershell
+ai-factory
+# lub równoważnie
+python -m ai_factory
+```
+
+4. Uruchom instancję procesu, podając `user_task_description` w formularzu startowym.
+
+## 🧯 Obsługa błędów
+
+* **Brak zmiennej procesu** (np. `generated_code`): worker rzuca błąd BPMN o kodzie `MISSING_VARIABLE`. Można go złapać Error Boundary Event; jeśli nie jest złapany, Zeebe od razu tworzy incydent z nazwą brakującej zmiennej (bez ponawiania).
+* **Błędy Claude API** (limit zapytań, błąd serwera, brak sieci, zły klucz lub model): job jest oznaczany jako nieudany z czytelnym komunikatem i ponawiany zgodnie z liczbą retry w modelu BPMN.
+* **Brak `ANTHROPIC_API_KEY`**: worker nie startuje i wypisuje, co ustawić.
+
+## 📁 Struktura projektu
+
+```
+├── bpmn/                   # model procesu i formularz startowy
+├── src/ai_factory/
+│   ├── worker.py           # punkt wejścia: połączenie z Zeebe i start workera
+│   ├── handlers.py         # handlery zadań: write-code, review-code, motivate-dev, save-to-disk
+│   ├── claude.py           # klient Claude i obsługa błędów API
+│   ├── validation.py       # walidacja zmiennych procesu (MISSING_VARIABLE)
+│   └── config.py           # konfiguracja ze zmiennych środowiskowych / .env
+├── .env.example
+├── pyproject.toml
+└── requirements.txt
+```
