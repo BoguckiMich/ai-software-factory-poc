@@ -1,0 +1,23 @@
+{
+  "components": [
+    {
+      "label": "Opis zadania dla AI",
+      "type": "textarea",
+      "layout": {
+        "row": "Row_0orsfc4",
+        "columns": null
+      },
+      "id": "Field_008em8v",
+      "key": "user_task_description"
+    }
+  ],
+  "type": "default",
+  "id": "Form_1l8hn6x",
+  "executionPlatform": "Camunda Cloud",
+  "executionPlatformVersion": "8.10.0",
+  "exporter": {
+    "name": "Camunda Modeler",
+    "version": "5.51.1"
+  },
+  "schemaVersion": 19
+}
