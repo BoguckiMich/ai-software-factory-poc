@@ -41,10 +41,22 @@ Skopiuj `.env.example` do `.env` i uzupełnij `ANTHROPIC_API_KEY`. Worker wczytu
 
 | Zmienna | Wymagana | Domyślnie | Opis |
 |---|---|---|---|
-| `ANTHROPIC_API_KEY` | tak | - | Klucz Anthropic API |
+| `ANTHROPIC_API_KEY` | tak | - | Klucz Anthropic API (lub klucz gateway przy pracy przez proxy) |
+| `ANTHROPIC_BASE_URL` | nie | `https://api.anthropic.com` | Adres API; ustaw na adres AI Gateway, aby łączyć się przez proxy |
 | `CLAUDE_MODEL` | nie | `claude-haiku-4-5-20251001` | Model używany przez wszystkie boty |
 | `ZEEBE_ADDRESS` | nie | `localhost:26500` | Adres gateway Zeebe (gRPC) |
 | `OUTPUT_DIR` | nie | `output` | Katalog na zatwierdzony kod (względem katalogu uruchomienia) |
+
+#### Połączenie przez AI Gateway (proxy)
+
+Aby ruch do Anthropic szedł przez lokalne proxy (autoryzacja, skan promptów, limity tokenów, audit log), ustaw w `.env`:
+
+```env
+ANTHROPIC_BASE_URL=http://127.0.0.1:8088
+ANTHROPIC_API_KEY=<klucz gateway z GATEWAY_KEYS proxy>
+```
+
+Zmiany w kodzie nie są potrzebne - SDK Anthropic samo odczytuje `ANTHROPIC_BASE_URL`. Prawdziwy klucz Anthropic zna wtedy tylko proxy. Uwaga: w trybie `enforce` proxy może zablokować zapytanie (np. gdy kod zawiera coś przypominającego klucz API) lub zwrócić 429 po przekroczeniu dziennego limitu tokenów - job w Camundzie zostanie wtedy oznaczony jako nieudany.
 
 ### Uruchomienie
 
